@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<openerp>
+    <data>
+
+        # 图书类的action响应
+        <record id="book_list_action" model="ir.actions.act_window">
+            <field name="name">图书</field>
+            <field name="res_model">books_management.book</field>
+            <field name="view_type=">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="xml">
+                <field class="oe_view_nocontent_create">
+                    添加一本新书吧！
+                </field>
+            </field>
+        </record>
+
+        # 图书类的form表单视图
+        <record id="book_form_view" model="ir.ui.view">
+            <field name="name">book.form</field>
+            <field name="model">books_management.book</field>
+            <field name="arch" type="xml">
+                <form string="book form">
+                    <sheet>
+                        <!--                         class="oe_read_only 点击修改时不显示该字段-->
+                        <separator string="书籍信息"/>
+                        <group col="4">
+                            <field name="name"/>
+                            <field name="author"/>
+                            <field name="pub_date"/>
+                            <field name="pub_house"/>
+                            <field name="book_num" widget="progressbar"/>
+                            <field name="bookcase_id"/>
+                            <field name="book_tag_ids" widget="many2many_tags"/>
+                            <field name="borrow_status"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        # 图书类的tree列表视图
+        <record id="book_tree_view" model="ir.ui.view">
+            <field name="name">book.tree</field>
+            <field name="model">books_management.book</field>
+            <field name="arch" type="xml">
+                <tree string="book tree" class="book_tree">
+                    <field name="name"/>
+                    <field name="author"/>
+                    <field name="pub_date"/>
+                    <field name="pub_house"/>
+                    <field name="book_num"/>
+                    <field name="bookcase_id"/>
+                    <field name="book_tag_ids" widget="many2many_tags"/>
+                    <field name="borrow_status"/>
+                </tree>
+            </field>
+        </record>
+
+        # 一级菜单
+        <menuitem id="main_books_management_menu" name="books management"/>
+        # 二级菜单
+        <menuitem id="books_management_menu" name="图书管理" parent="main_books_management_menu"/>
+        # 图书菜单
+        <menuitem id="books_management" name="图书" parent="books_management_menu" action="book_list_action"/>
+
+        # 书架的action的响应
+        <record id="book_case_action" model="ir.actions.act_window">
+            <field name="name">书架</field>
+            <field name="res_model">books_management.book_case</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="xml">
+                <field class="oe_view_nocontent_create">
+                    添加一个书架吧！
+                </field>
+            </field>
+        </record>
+
+        # 书架form表单
+        <record id="book_case_form_view" model="ir.ui.view">
+            <field name="name">book_case.form</field>
+            <field name="model">books_management.book_case</field>
+            <field name="arch" type="xml">
+                <form string="book_case form">
+                    <sheet>
+                        <separator string="书架信息"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="book_list" widget="one2many_list"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        #书架的tree列表视图
+        <record id="book_case_tree_view" model="ir.ui.view">
+            <field name="name">book_case.tree</field>
+            <field name="model">books_management.book_case</field>
+            <field name="arch" type="xml">
+                <tree string="book_case tree" class="book_tree">
+                    <field name="name"/>
+                    <field name="book_list" />
+                </tree>
+            </field>
+        </record>
+
+        # 书架的菜单
+        <menuitem id="book_case" name="书架" parent="books_management_menu"
+                  action="book_case_action"/>
+
+        # 标签的action的响应
+        <record id="book_tag_action" model="ir.actions.act_window">
+            <field name="name">书籍标签</field>
+            <field name="res_model">books_management.book_tag</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="xml">
+                <field class="oe_view_nocontent_create">
+                    添加一个标签吧！
+                </field>
+            </field>
+        </record>
+
+        # 标签的form表单视图
+        <record id="book_tag_form_view" model="ir.ui.view">
+            <field name="name">book_tag.form</field>
+            <field name="model">books_management.book_tag</field>
+            <field name="arch" type="xml">
+                <form string="book_tag form">
+                    <sheet>
+                        <separator string="书籍标签"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="book_tag_ids"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        # 标签的tree列表视图
+        <record id="book_tag_tree_view" model="ir.ui.view">
+            <field name="name">book_tag.tree</field>
+            <field name="model">books_management.book_tag</field>
+            <field name="arch" type="xml">
+                <tree string="book_tag tree">
+                    <field name="name"/>
+                    <field name="book_tag_ids"/>
+                </tree>
+            </field>
+        </record>
+
+        # 标签的菜单
+        <menuitem id="book_tag" name="书籍标签" parent="books_management_menu" action="book_tag_action"/>
+
+        # 借书的动作响应
+        <record id="borrow_book_action" model="ir.actions.act_window">
+            <field name="name">借书记录</field>
+            <field name="res_model">books_management.borrow_book</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="xml">
+                <field class="oe_view_nocontent_create">
+                    添加借书记录
+                </field>
+            </field>
+        </record>
+
+        # 借书的tree列表视图
+        <record id="borrow_book_tree_view" model="ir.ui.view">
+            <field name="name">borrow_book.tree</field>
+            <field name="model">books_management.borrow_book</field>
+            <field name="arch" type="xml">
+                <tree string="borrow_book tree">
+                    <field name="user"/>
+                    <field name="book_name"/>
+                    <field name="borrow_time"/>
+                    <field name="return_time"/>
+                    <field name="states"/>
+                    <button name="return_book" string="归还" type="object" confirm="您确认要还书?"
+                            class="oe_highlight" attrs="{'invisible':[('states','=','return_book')]}" />
+                </tree>
+            </field>
+        </record>
+
+        # 借书的form表单视图
+        <record id="borrow_book_form_view" model="ir.ui.view">
+            <field name="name">borrow_book form</field>
+            <field name="model">books_management.borrow_book</field>
+            <field name="arch" type="xml">
+                <form string="borrow_book form">
+                    <sheet>
+                        <separator string="借书详情"/>
+                        <group>
+                            <field name="user"/>
+                            <field name="book_name"/>
+                            <field name="borrow_time"/>
+                            <field name="return_time"/>
+                            <field name="states"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        # 借书的菜单
+        <menuitem id="borrow_book" name="借书记录" parent="books_management_menu" action="borrow_book_action" />
+    </data>
+</openerp>
