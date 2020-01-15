@@ -1,1 +1,4 @@
 # odoo9-books_management
+
+下载odoo9源码之后，把books_management文件夹放到addons
+或者openerp/addons中运行安装即可
