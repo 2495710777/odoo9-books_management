@@ -56,7 +56,7 @@ class Book(models.Model):
     bookcase_id = fields.Many2one(comodel_name='books_management.book_case', string='所在书架', required=True)
     book_tag_ids = fields.Many2many(comodel_name='books_management.book_tag', relation='book_book_tag', string='图书标签')
     # [(value, string), ...]
-    borrow_status = fields.Selection([('default', '存在'), ('lend', '借出')], string='借阅状态',
+    borrow_status = fields.Selection([('default', '存在'), ('lend', '已借完')], string='借阅状态',
                                      default='default', required=True)
 
     @api.onchange('book_num')
@@ -88,19 +88,21 @@ class BorrowBook(models.Model):
     states = fields.Selection([
         ('lend_book', "在借"),
         ('return_book', "已还"),
-    ], default='lend_book')
+    ], default='lend_book', string='图书状态')
 
     @api.model
     def create(self, vals):
         # 该函数需要返回一个创建的对象
         borrow = super(BorrowBook, self).create(vals)
-        print type(borrow)
         if borrow.book_name.book_num > 1:
             print borrow.book_name.book_num
             borrow.book_name.book_num -= 1
         elif borrow.book_name.book_num == 1:
             borrow.book_name.book_num = 0
-            borrow.book_name.borrow_states = 'lend'
+            borrow.book_name.borrow_status = 'lend'
+        if borrow.return_time:
+            if borrow.borrow_time > borrow.return_time:
+                raise BaseException
         return borrow
 
     @api.multi
@@ -108,6 +110,56 @@ class BorrowBook(models.Model):
         # 还书的逻辑
         if self.states == 'lend_book':
             self.states = 'return_book'
-            self.book_name.borrow_states = 'default'
+            self.book_name.borrow_status = 'default'
             self.book_name.book_num += 1
             self.return_time = datetime.now()
+
+
+# 创建向导模型
+# 输入书名（必填）、作者、出版日期、出版社 “下一步”按钮，点击进入下一页
+# 向导第二页：输入采购数量(必填)、放置书架（必填），“上一步”按钮返回上一页，“确定”按钮保存，保存完成之后将向导中填写的信息存放到“图书表”
+class Wizard(models.TransientModel):
+    _name = 'books_management.wizard'
+
+    name = fields.Char(string='图书名', required=True)
+    author = fields.Char(string='作者名')
+    pub_date = fields.Date(string='出版日期')
+    pub_house = fields.Char(string='出版社')
+    book_num = fields.Integer(string='采购数量', required=True, default=1)
+    bookcase_id = fields.Many2one(comodel_name='books_management.book_case', string='放置书架')
+    # book_tag_ids = fields.Many2many(comodel_name='books_management.book_tag', relation='book_book_tag', string='图书标签')
+    # [(value, string), ...]
+    state = fields.Selection([('step1', '第一步'), ('step2', '第二步')],
+                             string='当前步骤', default='step1', readonly=True)
+
+    @api.multi
+    def wizard_step1(self):
+        self.state = 'step1'
+        print self.id
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'books_management.wizard',
+            'view_mode': 'form',
+            'res_id': self.id,
+            # 'view_type': 'form',
+            # 'views': [(False, 'form')],
+            'target': 'new',
+        }
+
+    @api.multi
+    def wizard_step2(self):
+        self.state = 'step2'
+        print self.id
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'books_management.wizard',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'new',
+        }
+
+    @api.multi
+    def add_book(self):
+        self.env['books_management.book'].create({'name': self.name, 'author': self.author, 'pub_date': self.pub_date,
+                                                  'pub_house': self.pub_house, 'book_num': self.book_num,
+                                                  'bookcase_id': self.bookcase_id.id})

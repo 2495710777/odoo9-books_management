@@ -164,7 +164,7 @@
             <field name="view_mode">tree,form</field>
             <field name="help" type="xml">
                 <field class="oe_view_nocontent_create">
-                    添加借书记录
+                    添加借书记录！
                 </field>
             </field>
         </record>
@@ -197,8 +197,8 @@
                         <group>
                             <field name="user"/>
                             <field name="book_name"/>
-                            <field name="borrow_time"/>
-                            <field name="return_time"/>
+                            <field name="borrow_time" readonly="True"/>
+                            <field name="return_time" class="oe_read_only"/>
                             <field name="states"/>
                         </group>
                     </sheet>
@@ -208,5 +208,51 @@
 
         # 借书的菜单
         <menuitem id="borrow_book" name="借书记录" parent="books_management_menu" action="borrow_book_action" />
+
+        # 向导的动作响应
+        <record id="wizard_action" model="ir.actions.act_window">
+            <field name="name">新书入库</field>
+            <field name="res_model">books_management.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="wizard_form_view"/>
+            <field name="target">new</field>
+            <field name="view_mode">form</field>
+        </record>
+
+        # 向导的视图
+        <record id="wizard_form_view" model="ir.ui.view">
+            <field name="name">wizard Form</field>
+            <field name="model">books_management.wizard</field>
+            <field name="arch" type="xml">
+                <form string="新书入库步骤">
+                    <header>
+                        <button string="第一步" name="wizard_step1" type="object" states="step1" class="oe_highlight" />
+                        <button string="第二步" name="wizard_step2" type="object" states="step2" class="oe_highlight" />
+                        <field name="state" widget="statusbar" />
+                    </header>
+                    <group states="step1">
+                        <field name="name"/>
+                        <field name="author"/>
+                        <field name="pub_date"/>
+                        <field name="pub_house"/>
+                    </group>
+                    <group states="step2">
+                        <field name="bookcase_id" />
+                        <field name="book_num"/>
+
+                    </group>
+                    <footer states='step1'>
+                        <button name="wizard_step2" string="下一步" type="object" class="oe_highlight"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                    <footer states='step2'>
+                        <button name="wizard_step1" string="上一步" type="object"/>
+                        <button name="add_book" string="确定" type="object" class="oe_highlight"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <menuitem id="wizard" name="新书向导" parent="books_management_menu" action="wizard_action"/>
     </data>
 </openerp>
